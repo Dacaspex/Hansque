@@ -1,2 +1,13 @@
 bot:
-  api_key: 
+  api_key:
+  command_prefix: /
+
+  modules:
+    weather:
+      enabled: true
+      commands:
+        get:
+          description: Gets the current weather situation
+          aliases:
+            - currentweather
+            - weather
