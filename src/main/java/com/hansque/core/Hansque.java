@@ -4,15 +4,15 @@ import com.amihaiemil.eoyaml.YamlMapping;
 import com.amihaiemil.eoyaml.YamlNode;
 import com.amihaiemil.eoyaml.YamlSequence;
 import com.hansque.commands.Command;
-import com.hansque.commands.CommandArgument;
-import com.hansque.commands.CommandUtil;
+import com.hansque.commands.CommandConfiguration;
+import com.hansque.commands.argument.Arguments;
 import com.hansque.modules.Module;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,6 +21,7 @@ public class Hansque {
     private JDA jda;
     private String commandPrefix;
     private HashMap<String, Module> modules;
+    private HashMap<String, CommandConfiguration> commandConfigurations;
 
     private HashMap<String, String> aliasMap;
 
@@ -29,17 +30,25 @@ public class Hansque {
         this.commandPrefix = commandPrefix;
         this.modules = new HashMap<>();
         this.aliasMap = new HashMap<>();
+        this.commandConfigurations = new HashMap<>();
 
         this.jda.addEventListener(new EventListener());
     }
 
     public void registerModule(String name, Module module) {
         modules.put(name, module);
+
+        // Save command configurations
+        for (Command command : module.getCommands()) {
+            CommandConfiguration configuration = command.configure();
+            commandConfigurations.put(name + ":" + configuration.getTrigger(), configuration);
+        }
     }
 
     /**
      * Loads the aliases of all registered modules
      * Should therefore be called after all modules have been registered
+     *
      * @param moduleMapping The YAML mapping containing the modules
      */
     public void loadAliases(YamlMapping moduleMapping) {
@@ -51,14 +60,15 @@ public class Hansque {
             Module module = modules.get(moduleName);
             YamlMapping commandMapping = moduleMapping.yamlMapping(moduleName).yamlMapping("commands");
             for (Command command : module.getCommands()) {
-                YamlMapping commandNode = commandMapping.yamlMapping(command.getTrigger());
+                // TODO: Configure command once, then execute 'loadAliases' when all is known about the commands
+                YamlMapping commandNode = commandMapping.yamlMapping(command.configure().getTrigger());
                 if (commandNode == null) {
                     // TODO: throw error regarding invalid YAML
                     continue;
                 }
                 YamlSequence aliasSequence = commandNode.yamlSequence("aliases");
                 for (YamlNode aliasNode : aliasSequence.children()) {
-                    aliasMap.put(aliasNode.toString(), moduleName + ":" + command.getTrigger());
+                    aliasMap.put(aliasNode.toString(), moduleName + ":" + command.configure().getTrigger());
                 }
             }
         }
@@ -76,25 +86,37 @@ public class Hansque {
             }
             message = message.substring(1);
 
+            String[] messageParts = message.split(" ");
+
             // Split message on ':' and ' '
-            String[] parts = message.split("[: ]");
+            String command = messageParts[0];
+            String[] commandParts = command.split(":");
+            String module = commandParts[0];
+            String trigger = commandParts[1];
+
+            // Fill arguments
+            List<String> args = new ArrayList<String>();
+            for (int i = 1; i < messageParts.length; i++) {
+                args.add(messageParts[i]);
+                System.out.println(messageParts[i]);
+            }
 
             // Alias lookup
             // Alias cannot contain ':', might be an issue
-            if (aliasMap.containsKey(parts[0])) {
-                String commandFromAlias = aliasMap.get(parts[0]);
-                parts = message.replaceFirst(parts[0], commandFromAlias).split("[: ]");
-            }
+//            if (aliasMap.containsKey(command)) {
+//                String commandFromAlias = aliasMap.get(command);
+//            } else {
+//
+//            }
 
-            if (parts.length < 2) {
-                // No valid command
-                return;
-            }
+            System.out.println(module);
+            System.out.println(trigger);
 
-            String module = parts[0];
-            String command = parts[1];
-
-            List<CommandArgument> args = CommandUtil.getArguments(event.getMessage());
+            modules.get(module).execute(
+                    trigger,
+                    new Arguments(args, commandConfigurations.get(module + ":" + trigger)),
+                    event
+            );
 
             // TODO: command parametrisation and calling
             // TODO: input validation

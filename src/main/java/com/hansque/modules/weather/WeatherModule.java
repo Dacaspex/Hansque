@@ -1,6 +1,7 @@
 package com.hansque.modules.weather;
 
 import com.hansque.commands.Command;
+import com.hansque.commands.argument.Arguments;
 import com.hansque.modules.Module;
 import com.hansque.modules.weather.commands.GetWeatherCommand;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -22,7 +23,7 @@ public class WeatherModule implements Module {
         return new ArrayList<>(Arrays.asList(getWeatherCommand));
     }
 
-    public void execute(String command, String[] args, MessageReceivedEvent event) {
+    public void execute(String command, Arguments args, MessageReceivedEvent event) {
         if (command.equals("get")) {
             getWeatherCommand.execute(args, event);
         }

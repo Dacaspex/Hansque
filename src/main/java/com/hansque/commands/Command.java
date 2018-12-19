@@ -1,12 +1,11 @@
 package com.hansque.commands;
 
+import com.hansque.commands.argument.Arguments;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 public interface Command {
 
-    public String getTrigger();
+    public CommandConfiguration configure();
 
-    public String getDescription();
-
-    public void execute(String[] args, MessageReceivedEvent event);
+    public void execute(Arguments args, MessageReceivedEvent event);
 }
