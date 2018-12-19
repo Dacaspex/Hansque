@@ -4,30 +4,37 @@ import com.hansque.commands.Command;
 import com.hansque.commands.CommandConfiguration;
 import com.hansque.commands.argument.Argument;
 import com.hansque.commands.argument.Arguments;
+import com.hansque.services.weather.WeatherService;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 public class GetWeatherCommand implements Command {
 
+    private WeatherService weatherService;
+
     private Argument cityArgument;
     private Argument heightArgument;
 
-    public GetWeatherCommand() {
-        this.cityArgument = new Argument(
+    public GetWeatherCommand(WeatherService weatherService) {
+        this.weatherService = weatherService;
+    }
+
+    @Override
+    public CommandConfiguration configure() {
+        // Configure arguments
+        cityArgument = new Argument(
                 "city",
                 "The city of which you want to know the weather",
                 Argument.Type.STRING,
                 Argument.Constraint.REQUIRED
         );
-        this.heightArgument = new Argument(
+        heightArgument = new Argument(
                 "height",
                 "Optionally, the height at which you want to know the weather (for wind)",
                 Argument.Type.INT,
                 Argument.Constraint.OPTIONAL
         );
-    }
 
-    @Override
-    public CommandConfiguration configure() {
+        // Build command configuration
         return new CommandConfiguration.Builder()
                 .setTrigger("get")
                 .setDescription("This command gives the weather")
@@ -43,7 +50,7 @@ public class GetWeatherCommand implements Command {
                 : 100;
 
         event.getChannel().sendMessage(
-                "The weather in " + city + " at " + height + " meters is AMAZEBALLS"
+                "The weather in " + city + " at " + height + " meters is " + weatherService.testWeatherServiceMethod()
         ).queue();
     }
 }

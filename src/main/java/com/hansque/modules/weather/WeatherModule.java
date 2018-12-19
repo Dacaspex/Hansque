@@ -12,10 +12,23 @@ import java.util.List;
 
 public class WeatherModule implements Module {
 
+    private boolean enabled;
     private GetWeatherCommand getWeatherCommand;
 
-    public WeatherModule() {
-        this.getWeatherCommand = new GetWeatherCommand();
+    public WeatherModule(boolean enabled, GetWeatherCommand getWeatherCommand) {
+        this.enabled = enabled;
+        this.getWeatherCommand = getWeatherCommand;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
+    public void initialise() {
+        // Method body intentionally left black
+        // Services that need initialisation can be initialised here
     }
 
     // TODO: nicer implementation of getCommands()

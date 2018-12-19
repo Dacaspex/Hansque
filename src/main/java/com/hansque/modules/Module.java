@@ -8,6 +8,10 @@ import java.util.List;
 
 public interface Module {
 
+    public boolean isEnabled();
+
+    public void initialise();
+
     public List<Command> getCommands();
 
     public void execute(String command, Arguments args, MessageReceivedEvent event);

@@ -31,8 +31,15 @@ public class Hansque {
         this.modules = new HashMap<>();
         this.aliasMap = new HashMap<>();
         this.commandConfigurations = new HashMap<>();
+    }
 
-        this.jda.addEventListener(new EventListener());
+    public void initialise() {
+        // Load aliases into map
+
+        // Load all modules
+
+        // Lastly, register the event listener
+        jda.addEventListener(new EventListener());
     }
 
     public void registerModule(String name, Module module) {

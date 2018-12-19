@@ -3,7 +3,6 @@ package com.hansque.main;
 import com.amihaiemil.eoyaml.Yaml;
 import com.amihaiemil.eoyaml.YamlMapping;
 import com.hansque.core.Hansque;
-import com.hansque.modules.weather.WeatherModule;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 
@@ -21,14 +20,18 @@ public class Launcher {
         // Maybe move the hansque initialization and module registering to a different class
         String commandPrefix = botMapping.string("command_prefix");
         Hansque hansque = new Hansque(jda, commandPrefix);
+        hansque.registerModule("weather", Initialiser.getWeatherModule(yaml));
 
-        YamlMapping moduleMapping = botMapping.yamlMapping("modules");
+        YamlMapping moduleMapping = yaml.yamlMapping("modules");
 
-        if (moduleMapping.yamlMapping("weather").string("enabled").equals("true")) {
-            hansque.registerModule("weather", new WeatherModule());
+        // TODO
+        try {
+            hansque.loadAliases(moduleMapping);
+            hansque.initialise();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
         }
-
-        hansque.loadAliases(moduleMapping);
     }
 
     public static void main(String[] args) throws Exception {
