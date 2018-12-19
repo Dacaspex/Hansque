@@ -4,6 +4,8 @@ import com.amihaiemil.eoyaml.YamlMapping;
 import com.amihaiemil.eoyaml.YamlNode;
 import com.amihaiemil.eoyaml.YamlSequence;
 import com.hansque.commands.Command;
+import com.hansque.commands.CommandArgument;
+import com.hansque.commands.CommandUtil;
 import com.hansque.modules.Module;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.events.ReadyEvent;
@@ -12,8 +14,9 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
-public class Dispatcher {
+public class Hansque {
 
     private JDA jda;
     private String commandPrefix;
@@ -21,7 +24,7 @@ public class Dispatcher {
 
     private HashMap<String, String> aliasMap;
 
-    public Dispatcher(JDA jda, String commandPrefix) {
+    public Hansque(JDA jda, String commandPrefix) {
         this.jda = jda;
         this.commandPrefix = commandPrefix;
         this.modules = new HashMap<>();
@@ -64,9 +67,9 @@ public class Dispatcher {
     class EventListener extends ListenerAdapter {
         @Override
         public void onMessageReceived(MessageReceivedEvent event) {
-            // TODO: Validation of input (currently breaks if not in correct format...)
 
             String message = event.getMessage().getContentRaw();
+            System.out.println(message);
             if (!message.startsWith(commandPrefix)) {
                 // No command
                 return;
@@ -91,15 +94,10 @@ public class Dispatcher {
             String module = parts[0];
             String command = parts[1];
 
-            String[] args = new String[]{};
+            List<CommandArgument> args = CommandUtil.getArguments(event.getMessage());
 
-            if (parts.length > 2) {
-                args = Arrays.copyOfRange(parts, 2, parts.length);
-            }
-
-            if (modules.containsKey(module)) {
-                modules.get(module).execute(command, args, event);
-            }
+            // TODO: command parametrisation and calling
+            // TODO: input validation
         }
 
         @Override
