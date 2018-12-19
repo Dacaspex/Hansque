@@ -12,12 +12,19 @@ import java.util.List;
 
 public class WeatherModule implements Module {
 
+    private String name;
     private boolean enabled;
     private GetWeatherCommand getWeatherCommand;
 
-    public WeatherModule(boolean enabled, GetWeatherCommand getWeatherCommand) {
+    public WeatherModule(String name, boolean enabled, GetWeatherCommand getWeatherCommand) {
+        this.name = name;
         this.enabled = enabled;
         this.getWeatherCommand = getWeatherCommand;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     @Override

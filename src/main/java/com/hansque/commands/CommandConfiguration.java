@@ -10,11 +10,13 @@ public class CommandConfiguration {
     private List<Argument> arguments;
     private String trigger;
     private String description;
+    private List<String> aliases;
 
-    public CommandConfiguration(List<Argument> arguments, String trigger, String description) {
+    public CommandConfiguration(List<Argument> arguments, String trigger, String description, List<String> aliases) {
         this.arguments = arguments;
         this.trigger = trigger;
         this.description = description;
+        this.aliases = aliases;
     }
 
     public List<Argument> getArguments() {
@@ -29,15 +31,21 @@ public class CommandConfiguration {
         return description;
     }
 
+    public List<String> getAliases() {
+        return aliases;
+    }
+
     public static class Builder {
         private List<Argument> arguments;
         private String trigger;
         private String description;
+        private List<String> aliases;
 
         public Builder() {
             this.arguments = new ArrayList<>();
             this.trigger = "";
             this.description = "";
+            this.aliases = new ArrayList<>();
         }
 
         public Builder addArgument(Argument argument) {
@@ -58,8 +66,14 @@ public class CommandConfiguration {
             return this;
         }
 
+        public Builder addAliases(List<String> aliases) {
+            this.aliases.addAll(aliases);
+
+            return this;
+        }
+
         public CommandConfiguration build() {
-            return new CommandConfiguration(arguments, trigger, description);
+            return new CommandConfiguration(arguments, trigger, description, aliases);
         }
     }
 }

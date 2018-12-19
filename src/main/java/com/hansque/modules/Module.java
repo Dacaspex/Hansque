@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface Module {
 
+    public String getName();
+
     public boolean isEnabled();
 
     public void initialise();

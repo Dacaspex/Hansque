@@ -7,14 +7,18 @@ import com.hansque.commands.argument.Arguments;
 import com.hansque.services.weather.WeatherService;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+import java.util.List;
+
 public class GetWeatherCommand implements Command {
 
+    private List<String> aliases;
     private WeatherService weatherService;
 
     private Argument cityArgument;
     private Argument heightArgument;
 
-    public GetWeatherCommand(WeatherService weatherService) {
+    public GetWeatherCommand(List<String> aliases, WeatherService weatherService) {
+        this.aliases = aliases;
         this.weatherService = weatherService;
     }
 
@@ -37,6 +41,7 @@ public class GetWeatherCommand implements Command {
         // Build command configuration
         return new CommandConfiguration.Builder()
                 .setTrigger("get")
+                .addAliases(aliases)
                 .setDescription("This command gives the weather")
                 .addArgument(cityArgument)
                 .addArgument(heightArgument)

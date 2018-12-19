@@ -1,8 +1,5 @@
 package com.hansque.core;
 
-import com.amihaiemil.eoyaml.YamlMapping;
-import com.amihaiemil.eoyaml.YamlNode;
-import com.amihaiemil.eoyaml.YamlSequence;
 import com.hansque.commands.Command;
 import com.hansque.commands.CommandConfiguration;
 import com.hansque.commands.argument.Arguments;
@@ -16,67 +13,60 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Discord bot
+ */
 public class Hansque {
 
     private JDA jda;
     private String commandPrefix;
-    private HashMap<String, Module> modules;
+    private List<Module> modules;
+    private HashMap<String, Module> loadedModules;
     private HashMap<String, CommandConfiguration> commandConfigurations;
+    private HashMap<String, String> aliases;
 
-    private HashMap<String, String> aliasMap;
-
-    public Hansque(JDA jda, String commandPrefix) {
+    public Hansque(JDA jda, String commandPrefix, List<Module> modules) {
         this.jda = jda;
         this.commandPrefix = commandPrefix;
-        this.modules = new HashMap<>();
-        this.aliasMap = new HashMap<>();
+        this.modules = modules;
+        this.loadedModules = new HashMap<>();
+        this.aliases = new HashMap<>();
         this.commandConfigurations = new HashMap<>();
     }
 
+    /**
+     * Initialises the bot, registering all enabled modules and setting up event listeners.
+     */
     public void initialise() {
-        // Load aliases into map
-
-        // Load all modules
+        // Load all modules that are enabled
+        for (Module module : modules) {
+            if (module.isEnabled()) {
+                registerModule(module);
+            }
+        }
 
         // Lastly, register the event listener
         jda.addEventListener(new EventListener());
     }
 
-    public void registerModule(String name, Module module) {
-        modules.put(name, module);
+    /**
+     * Internal function to register a module and store information about it.
+     *
+     * @param module Module to register
+     */
+    private void registerModule(Module module) {
+        loadedModules.put(module.getName(), module);
 
         // Save command configurations
         for (Command command : module.getCommands()) {
+            // Get configuration and full command name
             CommandConfiguration configuration = command.configure();
-            commandConfigurations.put(name + ":" + configuration.getTrigger(), configuration);
-        }
-    }
+            String fullCommandName = module.getName() + ":" + configuration.getTrigger();
 
-    /**
-     * Loads the aliases of all registered modules
-     * Should therefore be called after all modules have been registered
-     *
-     * @param moduleMapping The YAML mapping containing the modules
-     */
-    public void loadAliases(YamlMapping moduleMapping) {
-        for (String moduleName : modules.keySet()) {
-            if (!modules.containsKey(moduleName)) {
-                // TODO: throw error regarding invalid YAML
-                return;
-            }
-            Module module = modules.get(moduleName);
-            YamlMapping commandMapping = moduleMapping.yamlMapping(moduleName).yamlMapping("commands");
-            for (Command command : module.getCommands()) {
-                // TODO: Configure command once, then execute 'loadAliases' when all is known about the commands
-                YamlMapping commandNode = commandMapping.yamlMapping(command.configure().getTrigger());
-                if (commandNode == null) {
-                    // TODO: throw error regarding invalid YAML
-                    continue;
-                }
-                YamlSequence aliasSequence = commandNode.yamlSequence("aliases");
-                for (YamlNode aliasNode : aliasSequence.children()) {
-                    aliasMap.put(aliasNode.toString(), moduleName + ":" + command.configure().getTrigger());
-                }
+            // Store required info for easier access
+            commandConfigurations.put(fullCommandName, configuration);
+            for (String alias : configuration.getAliases()) {
+                aliases.put(alias, fullCommandName);
             }
         }
     }
@@ -84,6 +74,8 @@ public class Hansque {
     class EventListener extends ListenerAdapter {
         @Override
         public void onMessageReceived(MessageReceivedEvent event) {
+            // TODO: THis is ugly AF and should be revised in the future. It works for now but
+            // TODO: That's all...
 
             String message = event.getMessage().getContentRaw();
             System.out.println(message);
@@ -96,7 +88,12 @@ public class Hansque {
             String[] messageParts = message.split(" ");
 
             // Split message on ':' and ' '
-            String command = messageParts[0];
+            String command;
+            if (aliases.containsKey(message)) {
+                command = aliases.get(message);
+            } else {
+                command = messageParts[0];
+            }
             String[] commandParts = command.split(":");
             String module = commandParts[0];
             String trigger = commandParts[1];
@@ -105,28 +102,13 @@ public class Hansque {
             List<String> args = new ArrayList<String>();
             for (int i = 1; i < messageParts.length; i++) {
                 args.add(messageParts[i]);
-                System.out.println(messageParts[i]);
             }
 
-            // Alias lookup
-            // Alias cannot contain ':', might be an issue
-//            if (aliasMap.containsKey(command)) {
-//                String commandFromAlias = aliasMap.get(command);
-//            } else {
-//
-//            }
-
-            System.out.println(module);
-            System.out.println(trigger);
-
-            modules.get(module).execute(
+            loadedModules.get(module).execute(
                     trigger,
                     new Arguments(args, commandConfigurations.get(module + ":" + trigger)),
                     event
             );
-
-            // TODO: command parametrisation and calling
-            // TODO: input validation
         }
 
         @Override
