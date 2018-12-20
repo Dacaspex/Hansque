@@ -55,7 +55,7 @@ public class GetWeatherCommand implements Command {
                 : 100;
 
         event.getChannel().sendMessage(
-                "The weather in " + city + " at " + height + " meters is " + weatherService.testWeatherServiceMethod()
+                "The weather in " + city + " at " + height + " meters is "
         ).queue();
     }
 }

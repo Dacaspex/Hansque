@@ -4,6 +4,7 @@ import com.amihaiemil.eoyaml.YamlMapping;
 import com.amihaiemil.eoyaml.YamlNode;
 import com.amihaiemil.eoyaml.YamlSequence;
 import com.hansque.modules.weather.WeatherModule;
+import com.hansque.modules.weather.commands.GetTemperatureCommand;
 import com.hansque.modules.weather.commands.GetWeatherCommand;
 import com.hansque.services.weather.OpenWeatherMapService;
 import com.hansque.services.weather.WeatherService;
@@ -35,8 +36,17 @@ public class Initialiser {
                 Initialiser.loadAliasesForModule("weather", "get", config),
                 weatherService
         );
+        GetTemperatureCommand getTemperatureCommand = new GetTemperatureCommand(
+                Initialiser.loadAliasesForModule("weather", "temperature", config),
+                weatherService
+        );
 
-        return new WeatherModule("weather", enabled, getWeatherCommand);
+        return new WeatherModule(
+                "weather",
+                enabled,
+                getWeatherCommand,
+                getTemperatureCommand
+        );
     }
 
     // All other modules...

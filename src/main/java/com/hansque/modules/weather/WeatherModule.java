@@ -3,6 +3,7 @@ package com.hansque.modules.weather;
 import com.hansque.commands.Command;
 import com.hansque.commands.argument.Arguments;
 import com.hansque.modules.Module;
+import com.hansque.modules.weather.commands.GetTemperatureCommand;
 import com.hansque.modules.weather.commands.GetWeatherCommand;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
@@ -14,12 +15,20 @@ public class WeatherModule implements Module {
 
     private String name;
     private boolean enabled;
-    private GetWeatherCommand getWeatherCommand;
 
-    public WeatherModule(String name, boolean enabled, GetWeatherCommand getWeatherCommand) {
+    private GetWeatherCommand getWeatherCommand;
+    private GetTemperatureCommand getTemperatureCommand;
+
+    public WeatherModule(
+            String name,
+            boolean enabled,
+            GetWeatherCommand getWeatherCommand,
+            GetTemperatureCommand getTemperatureCommand
+    ) {
         this.name = name;
         this.enabled = enabled;
         this.getWeatherCommand = getWeatherCommand;
+        this.getTemperatureCommand = getTemperatureCommand;
     }
 
     @Override
@@ -40,12 +49,21 @@ public class WeatherModule implements Module {
 
     // TODO: nicer implementation of getCommands()
     public List<Command> getCommands() {
-        return new ArrayList<>(Arrays.asList(getWeatherCommand));
+        return new ArrayList<>(
+                Arrays.asList(
+                        getWeatherCommand,
+                        getTemperatureCommand
+                )
+        );
     }
 
     public void execute(String command, Arguments args, MessageReceivedEvent event) {
         if (command.equals("get")) {
             getWeatherCommand.execute(args, event);
+        }
+
+        if (command.equals("temperature")) {
+            getTemperatureCommand.execute(args, event);
         }
     }
 }
