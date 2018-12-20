@@ -14,6 +14,42 @@ public class Arguments {
         this.configuration = configuration;
     }
 
+    /**
+     * Checks whether the provided arguments correspond the the command configuration
+     * and can be cast to that specific type.
+     *
+     * @return whether the arguments provided are valid
+     */
+    public boolean check() {
+        List<Argument> arguments = configuration.getArguments();
+
+        // Count if the args is between the number of required arguments and all arguments
+        long requiredCount = arguments.stream().filter(a -> a.getConstraint() == Argument.Constraint.REQUIRED).count();
+        if (args.size() < requiredCount || args.size() > arguments.size()) {
+            return false;
+        }
+
+        // Loop over each argument from the message and check it against the positional argument type
+        int i;
+        for (i = 0; i < args.size(); i++) {
+            try {
+                switch (arguments.get(i).getType()) {
+                    case INT:
+                        Integer.parseInt(args.get(i));
+                        break;
+                    case STRING:
+                    default:
+                        // Arguments are always a string
+                        break;
+                }
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public ArgumentValue get(String name) {
         // Search for the argument in the argument list provided by the configuration
         List<Argument> arguments = configuration.getArguments();

@@ -104,11 +104,21 @@ public class Hansque {
                 args.add(messageParts[i]);
             }
 
-            loadedModules.get(module).execute(
-                    trigger,
-                    new Arguments(args, commandConfigurations.get(module + ":" + trigger)),
-                    event
-            );
+            CommandConfiguration commandConfiguration = commandConfigurations.get(command);
+            Arguments arguments = new Arguments(args, commandConfiguration);
+
+            if (!arguments.check()) {
+                // TODO: Inform user that the arguments provided are not valid
+                // TODO: Possible with a "usage: ..." message
+                // Temporary
+                event.getChannel().sendMessage(commandConfiguration.getDescription()).queue();
+            } else {
+                loadedModules.get(module).execute(
+                        trigger,
+                        arguments,
+                        event
+                );
+            }
         }
 
         @Override
