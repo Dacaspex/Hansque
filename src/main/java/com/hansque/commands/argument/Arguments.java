@@ -1,6 +1,7 @@
 package com.hansque.commands.argument;
 
 import com.hansque.commands.CommandConfiguration;
+import com.hansque.commands.TypeUtil;
 
 import java.util.List;
 
@@ -12,6 +13,47 @@ public class Arguments {
     public Arguments(List<String> args, CommandConfiguration configuration) {
         this.args = args;
         this.configuration = configuration;
+    }
+
+    /**
+     * Checks whether the provided arguments correspond the the command configuration
+     * @return whether the arguments provided are valid
+     */
+    public boolean check() {
+        // Get argument list of command configuration
+        List<Argument> arguments = configuration.getArguments();
+        int cmdArgIndex = 0;
+
+        // Loop over provided arguments
+        for (int i = 0; i < this.args.size(); i++) {
+
+            String providedArg = this.args.get(i);
+            Argument cmdArg = arguments.get(cmdArgIndex);
+            Argument.Type cmdArgType = cmdArg.getType();
+
+            boolean argumentsMatch = false;
+            // Check whether specified argument corresponds to type
+            switch (cmdArgType) {
+                case INT:
+                    argumentsMatch = TypeUtil.isInteger(providedArg, 10);
+                    break;
+                case STRING:
+                    // Argument is always string
+                    argumentsMatch = true;
+                    break;
+            }
+
+            if (!argumentsMatch) {
+                if (cmdArg.getConstraint().equals(Argument.Constraint.OPTIONAL)) {
+                    i--;
+                } else if (cmdArg.getConstraint().equals(Argument.Constraint.REQUIRED)) {
+                    return false;
+                }
+            }
+            cmdArgIndex++;
+        }
+
+        return true;
     }
 
     public ArgumentValue get(String name) {
