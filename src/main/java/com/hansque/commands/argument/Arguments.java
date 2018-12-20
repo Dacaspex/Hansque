@@ -23,8 +23,15 @@ public class Arguments {
     public boolean check() {
         List<Argument> arguments = configuration.getArguments();
 
+        // Count if the args is between the number of required arguments and all arguments
+        long requiredCount = arguments.stream().filter(a -> a.getConstraint() == Argument.Constraint.REQUIRED).count();
+        if (args.size() < requiredCount || args.size() > arguments.size()) {
+            return false;
+        }
+
         // Loop over each argument from the message and check it against the positional argument type
-        for (int i = 0; i < args.size(); i++) {
+        int i;
+        for (i = 0; i < args.size(); i++) {
             try {
                 switch (arguments.get(i).getType()) {
                     case INT:
