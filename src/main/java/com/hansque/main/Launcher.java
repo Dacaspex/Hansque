@@ -3,6 +3,7 @@ package com.hansque.main;
 import com.amihaiemil.eoyaml.Yaml;
 import com.amihaiemil.eoyaml.YamlMapping;
 import com.hansque.core.Hansque;
+import com.sun.org.apache.xml.internal.security.Init;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 
@@ -32,7 +33,8 @@ public class Launcher {
                 commandPrefix,
                 new ArrayList<>(
                         Arrays.asList(
-                                Initialiser.getWeatherModule(yaml)
+                                Initialiser.getWeatherModule(yaml),
+                                Initialiser.getManagementModule(yaml)
                         )
                 )
         );

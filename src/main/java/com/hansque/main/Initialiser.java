@@ -3,6 +3,8 @@ package com.hansque.main;
 import com.amihaiemil.eoyaml.YamlMapping;
 import com.amihaiemil.eoyaml.YamlNode;
 import com.amihaiemil.eoyaml.YamlSequence;
+import com.hansque.modules.management.ManagementModule;
+import com.hansque.modules.management.commands.CleanMessagesCommand;
 import com.hansque.modules.weather.WeatherModule;
 import com.hansque.modules.weather.commands.GetTemperatureCommand;
 import com.hansque.modules.weather.commands.GetWeatherCommand;
@@ -46,6 +48,22 @@ public class Initialiser {
                 enabled,
                 getWeatherCommand,
                 getTemperatureCommand
+        );
+    }
+
+    public static ManagementModule getManagementModule(YamlMapping config) {
+        // Fetch details from config
+        boolean enabled = Boolean.parseBoolean(config.yamlMapping("modules").yamlMapping("management").string("enabled"));
+
+        // Create commands
+        CleanMessagesCommand cleanMessagesCommand = new CleanMessagesCommand(
+                Initialiser.loadAliasesForModule("management", "cleanmessages", config)
+        );
+
+        return new ManagementModule(
+                "management",
+                enabled,
+                cleanMessagesCommand
         );
     }
 

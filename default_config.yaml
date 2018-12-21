@@ -9,8 +9,16 @@ modules:
       get:
         description: Gets the current weather situation
         aliases:
-        - currentweather
-        - weather
+          - currentweather
+          - weather
+
+  management:
+    enabled: true
+    commands:
+      cleanmessages:
+        description: This command cleans up messages in a channel
+        aliases:
+          - clean
 
 services:
   weather:
