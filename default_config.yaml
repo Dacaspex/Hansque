@@ -9,8 +9,12 @@ modules:
       get:
         description: Gets the current weather situation
         aliases:
-        - currentweather
-        - weather
+          - currentweather
+          - weather
+      temperature:
+        description: Gets the current temperature
+        aliases:
+          - temp
 
 services:
   weather:

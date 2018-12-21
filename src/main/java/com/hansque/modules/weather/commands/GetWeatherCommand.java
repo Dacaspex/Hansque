@@ -4,9 +4,13 @@ import com.hansque.commands.Command;
 import com.hansque.commands.CommandConfiguration;
 import com.hansque.commands.argument.Argument;
 import com.hansque.commands.argument.Arguments;
+import com.hansque.modules.weather.Weather;
 import com.hansque.services.weather.WeatherService;
+import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+import java.awt.Color;
 import java.util.List;
 
 public class GetWeatherCommand implements Command {
@@ -50,12 +54,25 @@ public class GetWeatherCommand implements Command {
 
     public void execute(Arguments args, MessageReceivedEvent event) {
         String city = args.get("city").string();
-        int height = args.get("height").exists()
-                ? args.get("height").integer()
-                : 100;
+        Weather weather = weatherService.getCurrentWeatherByCity(city);
 
-        event.getChannel().sendMessage(
-                "The weather in " + city + " at " + height + " meters is "
-        ).queue();
+        // Build an embedded message with all the weather details
+        MessageEmbed message = new EmbedBuilder()
+                .setColor(new Color(118, 207, 242))
+                .setAuthor("Weather service")
+                .setDescription("Weather for " + city)
+                .addField(
+                        "Temperature",
+                        weather.getTemperature().celsius() + "°C",
+                        true
+                )
+                .addField(
+                        "wind",
+                        weather.getWind().getSpeed() + "m/s",
+                        true
+                )
+                .build();
+
+        event.getChannel().sendMessage(message).queue();
     }
 }
