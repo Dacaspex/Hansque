@@ -41,23 +41,37 @@ public class CleanMessagesCommand implements Command {
 
     @Override
     public void execute(Arguments args, MessageReceivedEvent event) {
-        // TODO: discord API does not allow over 100 messages to be
-        // TODO: retrieved at once, so make a new thread to .complete()
-        // TODO: retrieval and iteratively gather more messages
-        int number = args.get("number").exists()
+        final int number = args.get("number").exists()
                 ? args.get("number").integer()
                 : 50;
 
-        MessageChannel messageChannel = event.getChannel();
+        final MessageChannel messageChannel = event.getChannel();
 
-        MessageHistory history = messageChannel.getHistory();
-        history.retrievePast(number).queue(messageList -> {
-            for (Message message : messageList) {
-                message.delete().queue();
+        final MessageHistory history = messageChannel.getHistory();
+
+        new Thread(() -> {
+            int toDelete = number;
+            // Start at -1 since it will always clean up
+            // the command trigger
+            int deleted = -1;
+
+            boolean isDeleting = true;
+            while (isDeleting) {
+
+                int toRetrieve = Math.min(toDelete, 100);
+
+                List<Message> messages = history.retrievePast(toRetrieve).complete();
+                messages.forEach(msg -> msg.delete().complete());
+
+                toDelete -= toRetrieve;
+                deleted += messages.size();
+
+                if (toDelete == 0) {
+                    isDeleting = false;
+                    messageChannel.sendMessage("Cleaned up `" + deleted + "` messages")
+                            .queue(response -> response.delete().queueAfter(15, TimeUnit.SECONDS));
+                }
             }
-
-            messageChannel.sendMessage("Cleaned up `" + messageList.size() + "` messages")
-                    .queue(response -> response.delete().queueAfter(15, TimeUnit.SECONDS));
-        });
+        }).start();
     }
 }
