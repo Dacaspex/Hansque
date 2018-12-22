@@ -1,4 +1,4 @@
-package com.hansque.modules.weather;
+package com.hansque.services.weather;
 
 public class Weather {
 

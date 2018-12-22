@@ -1,6 +1,6 @@
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.hansque.modules.weather.Temperature;
+import com.hansque.services.weather.Temperature;
 import org.junit.jupiter.api.Test;
 
 public class TemperatureTest {

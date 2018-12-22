@@ -4,7 +4,7 @@ import com.hansque.commands.Command;
 import com.hansque.commands.CommandConfiguration;
 import com.hansque.commands.argument.Argument;
 import com.hansque.commands.argument.Arguments;
-import com.hansque.modules.weather.Weather;
+import com.hansque.services.weather.Weather;
 import com.hansque.services.weather.WeatherService;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.MessageEmbed;

@@ -1,8 +1,5 @@
 package com.hansque.services.weather;
 
-import com.hansque.modules.weather.Temperature;
-import com.hansque.modules.weather.Weather;
-import com.hansque.modules.weather.Wind;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
