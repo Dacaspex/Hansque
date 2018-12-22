@@ -11,6 +11,10 @@ public class Temperature {
      * @param kelvin Temperature in kelvin
      */
     public Temperature(double kelvin) {
+        if (kelvin < 0) {
+            throw new IllegalArgumentException("Temperature in kelvin cannot be negative");
+        }
+
         this.kelvin = kelvin;
     }
 
