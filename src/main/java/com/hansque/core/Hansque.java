@@ -2,6 +2,7 @@ package com.hansque.core;
 
 import com.hansque.commands.Command;
 import com.hansque.commands.CommandConfiguration;
+import com.hansque.commands.CommandStringUtil;
 import com.hansque.commands.argument.Arguments;
 import com.hansque.modules.Module;
 import net.dv8tion.jda.core.JDA;
@@ -9,7 +10,6 @@ import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,9 +21,18 @@ public class Hansque {
     private JDA jda;
     private String commandPrefix;
     private List<Module> modules;
+    /**
+     * Mapping between moduleString -> module
+     */
     private HashMap<String, Module> loadedModules;
-    private HashMap<String, CommandConfiguration> commandConfigurations;
+    /**
+     * Mapping between aliasString -> moduleString:triggerString
+     */
     private HashMap<String, String> aliases;
+    /**
+     * Mapping between moduleString:triggerString -> command
+     */
+    private HashMap<String, Command> commands;
 
     public Hansque(JDA jda, String commandPrefix, List<Module> modules) {
         this.jda = jda;
@@ -31,7 +40,7 @@ public class Hansque {
         this.modules = modules;
         this.loadedModules = new HashMap<>();
         this.aliases = new HashMap<>();
-        this.commandConfigurations = new HashMap<>();
+        this.commands = new HashMap<>();
     }
 
     /**
@@ -41,6 +50,7 @@ public class Hansque {
         // Load all modules that are enabled
         for (Module module : modules) {
             if (module.isEnabled()) {
+                module.initialise();
                 registerModule(module);
             }
         }
@@ -57,14 +67,15 @@ public class Hansque {
     private void registerModule(Module module) {
         loadedModules.put(module.getName(), module);
 
-        // Save command configurations
+        // Save commands
         for (Command command : module.getCommands()) {
-            // Get configuration and full command name
-            CommandConfiguration configuration = command.configure();
+            // Initialise command
+            command.initialise();
+            CommandConfiguration configuration = command.getConfiguration();
             String fullCommandName = module.getName() + ":" + configuration.getTrigger();
 
-            // Store required info for easier access
-            commandConfigurations.put(fullCommandName, configuration);
+            // And store for easier access
+            commands.put(fullCommandName, command);
             for (String alias : configuration.getAliases()) {
                 aliases.put(alias, fullCommandName);
             }
@@ -74,50 +85,43 @@ public class Hansque {
     class EventListener extends ListenerAdapter {
         @Override
         public void onMessageReceived(MessageReceivedEvent event) {
-            // TODO: THis is ugly AF and should be revised in the future. It works for now but
-            // TODO: That's all...
-
+            // Get message from event
             String message = event.getMessage().getContentRaw();
-            System.out.println(message);
-            if (!message.startsWith(commandPrefix)) {
-                // No command
+
+            // Test if the message starts with the command prefix
+            if (!CommandStringUtil.startsWithPrefix(message, commandPrefix)) {
                 return;
             }
-            message = message.substring(1);
 
-            String[] messageParts = message.split(" ");
+            // Strip this prefix for easier processing
+            String commandString = CommandStringUtil.stripPrefixFromString(message, commandPrefix);
 
-            // Split message on ':' and ' '
-            String command;
-            if (aliases.containsKey(message)) {
-                command = aliases.get(message);
-            } else {
-                command = messageParts[0];
-            }
-            String[] commandParts = command.split(":");
-            String module = commandParts[0];
-            String trigger = commandParts[1];
+            // Convert alias to actual command
+            commandString = CommandStringUtil.convertAlias(commandString, aliases);
 
-            // Fill arguments
-            List<String> args = new ArrayList<String>();
-            for (int i = 1; i < messageParts.length; i++) {
-                args.add(messageParts[i]);
+            // Get information from command string
+            String module = CommandStringUtil.getModuleFromCommandString(commandString);
+            String trigger = CommandStringUtil.getTriggerFromCommandString(commandString);
+            List<String> args = CommandStringUtil.getArgumentsFromCommandString(commandString);
+            String commandKey = module + ":" + trigger;
+
+            // Check if command exists
+            if (!commands.containsKey(commandKey)) {
+                return; // Temporary
             }
 
-            CommandConfiguration commandConfiguration = commandConfigurations.get(command);
+            // Get command and create objects
+            Command command = commands.get(module + ":" + trigger);
+            CommandConfiguration commandConfiguration = command.getConfiguration();
             Arguments arguments = new Arguments(args, commandConfiguration);
 
             if (!arguments.check()) {
                 // TODO: Inform user that the arguments provided are not valid
                 // TODO: Possible with a "usage: ..." message
                 // Temporary
-                event.getChannel().sendMessage(commandConfiguration.getDescription()).queue();
+                event.getChannel().sendMessage(command.getConfiguration().getDescription()).queue();
             } else {
-                loadedModules.get(module).execute(
-                        trigger,
-                        arguments,
-                        event
-                );
+                loadedModules.get(module).execute(trigger, arguments, event);
             }
         }
 
