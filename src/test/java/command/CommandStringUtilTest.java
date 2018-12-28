@@ -37,7 +37,7 @@ public class CommandStringUtilTest {
         Map<String, String> aliases = new HashMap<>();
         aliases.put("alias", "mappedAlias");
 
-        assertEquals("mappedAlias", CommandStringUtil.convertAlias("test", aliases));
+        assertEquals("mappedAlias", CommandStringUtil.convertAlias("alias", aliases));
         assertEquals("abcde", CommandStringUtil.convertAlias("abcde", aliases));
     }
 
