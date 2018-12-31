@@ -1,6 +1,6 @@
 language: java
 dist: trusty
-install: mvn clean install -Dsonar.host.url="https://sonarcloud.io"
+install: mvn clean install
 
 # Will try to figure this out in the future
 #addons:
