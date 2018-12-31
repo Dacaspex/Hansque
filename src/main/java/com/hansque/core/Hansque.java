@@ -121,7 +121,7 @@ public class Hansque {
                 // Temporary
                 event.getChannel().sendMessage(command.getConfiguration().getDescription()).queue();
             } else {
-                loadedModules.get(module).execute(trigger, arguments, event);
+                loadedModules.get(module).execute(command, arguments, event);
             }
         }
 
