@@ -6,12 +6,28 @@ import java.util.List;
 
 public class Arguments {
 
-    private List<String> args;
-    private CommandConfiguration configuration;
+    private final List<String> args;
+    private final String original;
+    private final CommandConfiguration configuration;
 
-    public Arguments(List<String> args, CommandConfiguration configuration) {
+    public Arguments(List<String> args, String original, CommandConfiguration configuration) {
         this.args = args;
+        this.original = original;
         this.configuration = configuration;
+    }
+
+    /**
+     * @return The argument list as provided by the user (words separated by space)
+     */
+    public List<String> getList() {
+        return args;
+    }
+
+    /**
+     * @return The argument string as provided by the user (not separated or transformed)
+     */
+    public String getOriginal() {
+        return original;
     }
 
     /**
@@ -98,8 +114,4 @@ public class Arguments {
             return value != null;
         }
     }
-
-    // arguments.get("city").string()
-    // arguments.get("height").int()
-    // arguments.get(cityArgument)
 }
