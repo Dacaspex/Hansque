@@ -36,6 +36,14 @@ public class CommandStringUtil {
         return string.substring(prefix.length());
     }
 
+    /**
+     * Converts an command alias in a comand string to the actual command name. If no alias
+     * is found, the command string is not changed and returned as was given.
+     *
+     * @param commandString Command string in the form (module:trigger)|alias arg1 arg2 ...
+     * @param aliases       Mapping between alias -> module:trigger
+     * @return Command string in which the alias is replaced by the command name
+     */
     public static String convertAlias(String commandString, Map<String, String> aliases) {
         String[] parts = commandString.split(" ");
         parts[0] = aliases.getOrDefault(parts[0], parts[0]);
@@ -43,6 +51,13 @@ public class CommandStringUtil {
         return String.join(" ", parts);
     }
 
+    /**
+     * Gets the module name from the command string. The command string must be of the following
+     * format: module:trigger arg1 arg2 ...
+     *
+     * @param commandString Command string in the described format
+     * @return Module name
+     */
     public static String getModuleFromCommandString(String commandString) {
         String[] parts = commandString.split(":");
         if (parts.length < 2) {

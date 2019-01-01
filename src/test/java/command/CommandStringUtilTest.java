@@ -3,8 +3,7 @@ package command;
 import com.hansque.commands.CommandStringUtil;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -43,16 +42,27 @@ public class CommandStringUtilTest {
 
     @Test
     void getModuleFromCommandStringTest() {
-        // TODO
+        assertEquals("weather", CommandStringUtil.getModuleFromCommandString("weather:run arg1 arg2"));
+        assertEquals("", CommandStringUtil.getModuleFromCommandString(":run arg1 arg2"));
+        assertEquals("weather", CommandStringUtil.getModuleFromCommandString("weather: arg1 arg2"));
+        assertThrows(IllegalArgumentException.class, () -> CommandStringUtil.getModuleFromCommandString("weather run arg1"));
     }
 
     @Test
     void getTriggerFromCommandStringTest() {
-        // TODO
+        assertEquals("run", CommandStringUtil.getTriggerFromCommandString("weather:run arg1 arg2"));
+        assertEquals("", CommandStringUtil.getTriggerFromCommandString("weather: arg1 arg2"));
+        assertEquals("run", CommandStringUtil.getTriggerFromCommandString(":run arg1 arg2"));
     }
 
     @Test
     void getArgumentsFromCommandStringTest() {
-        // TODO
+        List<String> expected = new ArrayList<>(
+                Arrays.asList(
+                        "arg1",
+                        "arg2"
+                )
+        );
+        assertEquals(expected, CommandStringUtil.getArgumentsFromCommandString("module:trigger arg1 arg2"));
     }
 }
