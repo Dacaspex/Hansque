@@ -11,6 +11,13 @@ import java.util.Map;
 public class CommandStringUtil {
 
     /**
+     * Private constructor for static utility class
+     */
+    private CommandStringUtil() {
+        // Intentionally left blank
+    }
+
+    /**
      * Strips a prefix from a string. The string must start with the prefix, otherwise an
      * illegal argument exception is thrown.
      *
