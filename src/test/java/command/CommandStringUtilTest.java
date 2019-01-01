@@ -51,7 +51,6 @@ public class CommandStringUtilTest {
     @Test
     void getTriggerFromCommandStringTest() {
         assertEquals("run", CommandStringUtil.getTriggerFromCommandString("weather:run arg1 arg2"));
-        assertEquals("", CommandStringUtil.getTriggerFromCommandString("weather: arg1 arg2"));
         assertEquals("run", CommandStringUtil.getTriggerFromCommandString(":run arg1 arg2"));
     }
 
@@ -64,5 +63,6 @@ public class CommandStringUtilTest {
                 )
         );
         assertEquals(expected, CommandStringUtil.getArgumentsFromCommandString("module:trigger arg1 arg2"));
+        assertEquals(new ArrayList<>(), CommandStringUtil.getArgumentsFromCommandString("module:trigger"));
     }
 }

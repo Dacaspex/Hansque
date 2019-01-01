@@ -67,6 +67,13 @@ public class CommandStringUtil {
         return parts[0];
     }
 
+    /**
+     * Gets the trigger name from the command string. The command string must be of the following
+     * format: module:trigger arg1 arg2 ...
+     *
+     * @param commandString Command string in the described format
+     * @return Trigger name
+     */
     public static String getTriggerFromCommandString(String commandString) {
         String[] parts = commandString.split(" ");
         String[] commandParts = parts[0].split(":");
@@ -74,6 +81,13 @@ public class CommandStringUtil {
         return commandParts[1];
     }
 
+    /**
+     * Gets a list of the arguments in the command string. The command string must be in the following
+     * format: module:trigger arg1 arg2 ...
+     *
+     * @param commandString Command string in the described format
+     * @return List of arguments
+     */
     public static List<String> getArgumentsFromCommandString(String commandString) {
         String[] parts = commandString.split(" ");
 
