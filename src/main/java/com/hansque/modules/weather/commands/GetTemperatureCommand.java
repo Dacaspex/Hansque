@@ -12,6 +12,7 @@ import java.util.List;
 public class GetTemperatureCommand implements Command {
 
     private List<String> aliases;
+    private CommandConfiguration configuration;
     private WeatherService weatherService;
 
     public GetTemperatureCommand(List<String> aliases, WeatherService weatherService) {
@@ -20,13 +21,18 @@ public class GetTemperatureCommand implements Command {
     }
 
     @Override
-    public CommandConfiguration configure() {
-        return new CommandConfiguration.Builder()
+    public void initialise() {
+        configuration = new CommandConfiguration.Builder()
                 .setTrigger("temperature")
                 .setDescription("Get the temperature for a city")
                 .addArgument(new Argument("city", "City", Argument.Type.STRING))
                 .addAliases(aliases)
                 .build();
+    }
+
+    @Override
+    public CommandConfiguration getConfiguration() {
+        return configuration;
     }
 
     @Override

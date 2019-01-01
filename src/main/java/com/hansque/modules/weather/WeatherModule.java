@@ -57,13 +57,7 @@ public class WeatherModule implements Module {
         );
     }
 
-    public void execute(String command, Arguments args, MessageReceivedEvent event) {
-        if (command.equals("get")) {
-            getWeatherCommand.execute(args, event);
-        }
-
-        if (command.equals("temperature")) {
-            getTemperatureCommand.execute(args, event);
-        }
+    public void execute(Command command, Arguments args, MessageReceivedEvent event) {
+        command.execute(args, event);
     }
 }

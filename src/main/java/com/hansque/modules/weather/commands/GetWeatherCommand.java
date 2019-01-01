@@ -16,10 +16,8 @@ import java.util.List;
 public class GetWeatherCommand implements Command {
 
     private List<String> aliases;
+    private CommandConfiguration configuration;
     private WeatherService weatherService;
-
-    private Argument cityArgument;
-    private Argument heightArgument;
 
     public GetWeatherCommand(List<String> aliases, WeatherService weatherService) {
         this.aliases = aliases;
@@ -27,29 +25,34 @@ public class GetWeatherCommand implements Command {
     }
 
     @Override
-    public CommandConfiguration configure() {
-        // Configure arguments
-        cityArgument = new Argument(
+    public void initialise() {
+        // Create arguments
+        Argument cityArgument = new Argument(
                 "city",
                 "The city of which you want to know the weather",
                 Argument.Type.STRING,
                 Argument.Constraint.REQUIRED
         );
-        heightArgument = new Argument(
+        Argument heightArgument = new Argument(
                 "height",
                 "Optionally, the height at which you want to know the weather (for wind)",
                 Argument.Type.INT,
                 Argument.Constraint.OPTIONAL
         );
 
-        // Build command configuration
-        return new CommandConfiguration.Builder()
+        // Build configuration
+        configuration = new CommandConfiguration.Builder()
                 .setTrigger("get")
                 .addAliases(aliases)
                 .setDescription("This command gives the weather")
                 .addArgument(cityArgument)
                 .addArgument(heightArgument)
                 .build();
+    }
+
+    @Override
+    public CommandConfiguration getConfiguration() {
+        return configuration;
     }
 
     public void execute(Arguments args, MessageReceivedEvent event) {
