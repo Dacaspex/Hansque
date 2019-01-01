@@ -11,15 +11,6 @@ import java.util.Map;
 public class CommandStringUtil {
 
     /**
-     * @param string String to test
-     * @param prefix Prefix
-     * @return True if the command string starts with the prefix
-     */
-    public static boolean startsWithPrefix(String string, String prefix) {
-        return string.startsWith(prefix);
-    }
-
-    /**
      * Strips a prefix from a string. The string must start with the prefix, otherwise an
      * illegal argument exception is thrown.
      *

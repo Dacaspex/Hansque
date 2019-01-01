@@ -5,21 +5,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CommandStringUtilTest {
-
-    @Test
-    void startWithPrefixTest() {
-        assertTrue(CommandStringUtil.startsWithPrefix("abcde", "ab"));
-        assertFalse(CommandStringUtil.startsWithPrefix("abcde", "bc"));
-
-        // Empty case, must return true
-        assertTrue(CommandStringUtil.startsWithPrefix("abcde", ""));
-
-        // Prefix is too long
-        assertFalse(CommandStringUtil.startsWithPrefix("abc", "abcde"));
-    }
 
     @Test
     void stripePrefixFromStringTest() {

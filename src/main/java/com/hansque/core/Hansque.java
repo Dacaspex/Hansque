@@ -89,7 +89,7 @@ public class Hansque {
             String message = event.getMessage().getContentRaw();
 
             // Test if the message starts with the command prefix
-            if (!CommandStringUtil.startsWithPrefix(message, commandPrefix)) {
+            if (!message.startsWith(commandPrefix)) {
                 return;
             }
 
