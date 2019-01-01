@@ -52,7 +52,7 @@ public class CommandStringUtil {
     public static String getModuleFromCommandString(String commandString) {
         String[] parts = commandString.split(":");
         if (parts.length < 2) {
-            throw new IllegalArgumentException("The command string must contain at least one colon to identify the ");
+            throw new IllegalArgumentException("The command string must contain at least one colon to identify the module");
         }
 
         return parts[0];
