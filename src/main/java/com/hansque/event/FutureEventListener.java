@@ -33,9 +33,8 @@ public interface FutureEventListener {
     public boolean consumes();
 
     /**
-     * Indicates if the listener is done listening. A listener might capture more events.
-     * <p>
-     * This method is only executed if {@code check()} returned true.
+     * Indicates if the listener is done listening. A listener might capture more events
+     * or it may stop listening without having handled events (e.g. because of a timeout)
      *
      * @return True if the listener is done listening, false otherwise.
      */

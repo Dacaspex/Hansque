@@ -112,20 +112,20 @@ public class Hansque {
             for (int i = 0; i < futureEventListeners.size(); i++) {
                 FutureEventListener futureEventListener = futureEventListeners.get(i);
 
-                // Check if the event must be processed by a future event
+                // Check if the event must be processed by a future event listener
                 if (futureEventListener.check(event)) {
                     futureEventListener.handle(event);
 
-                    // If the event is done, remove it from the future events array
-                    if (futureEventListener.isDone()) {
-                        futureEventListeners.remove(futureEventListener);
-                        i--;
-                    }
-
-                    // Check if the event should be consumed
+                    // Check if the listener should be consumed
                     if (futureEventListener.consumes()) {
                         return;
                     }
+                }
+
+                // If the listener is done, remove it from the future event listeners array
+                if (futureEventListener.isDone()) {
+                    futureEventListeners.remove(futureEventListener);
+                    i--;
                 }
             }
 
