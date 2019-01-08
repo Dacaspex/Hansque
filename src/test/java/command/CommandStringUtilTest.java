@@ -54,4 +54,13 @@ public class CommandStringUtilTest {
         assertEquals(expected, CommandStringUtil.getArgumentsFromCommandString("module:trigger arg1 arg2"));
         assertEquals(new ArrayList<>(), CommandStringUtil.getArgumentsFromCommandString("module:trigger"));
     }
+
+    @Test
+    void getOriginalArgumentStringFromCommandStringTest() {
+        assertEquals(
+                "arg1 arg2",
+                CommandStringUtil.getOriginalArgumentStringFromCommandString("module:trigger arg1 arg2")
+        );
+        assertEquals("", CommandStringUtil.getOriginalArgumentStringFromCommandString("module:trigger"));
+    }
 }

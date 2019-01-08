@@ -11,6 +11,13 @@ import java.util.Map;
 public class CommandStringUtil {
 
     /**
+     * Private constructor for static utility class
+     */
+    private CommandStringUtil() {
+        // Intentionally left blank
+    }
+
+    /**
      * Strips a prefix from a string. The string must start with the prefix, otherwise an
      * illegal argument exception is thrown.
      *
@@ -84,5 +91,22 @@ public class CommandStringUtil {
 
         // Only return the sub list starting from 1 (i.e. parts[0] = moduleString:triggerString)
         return new ArrayList<>(Arrays.asList(parts).subList(1, parts.length));
+    }
+
+    /**
+     * Gets the original argument string from the command string. The command string must be in the following
+     * format: module:trigger arg1 arg2 ...
+     *
+     * @param commandString Command string in the described format
+     * @return Argument string
+     */
+    public static String getOriginalArgumentStringFromCommandString(String commandString) {
+        String[] parts = commandString.split(" ", 2);
+
+        if (parts.length <= 1) {
+            return "";
+        }
+
+        return parts[1];
     }
 }

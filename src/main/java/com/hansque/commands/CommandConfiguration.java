@@ -7,16 +7,24 @@ import java.util.List;
 
 public class CommandConfiguration {
 
-    private List<Argument> arguments;
-    private String trigger;
-    private String description;
-    private List<String> aliases;
+    private final List<Argument> arguments;
+    private final String trigger;
+    private final String description;
+    private final List<String> aliases;
+    private final boolean parseArguments;
 
-    public CommandConfiguration(List<Argument> arguments, String trigger, String description, List<String> aliases) {
+    public CommandConfiguration(
+            List<Argument> arguments,
+            String trigger,
+            String description,
+            List<String> aliases,
+            boolean parseArguments
+    ) {
         this.arguments = arguments;
         this.trigger = trigger;
         this.description = description;
         this.aliases = aliases;
+        this.parseArguments = parseArguments;
     }
 
     public List<Argument> getArguments() {
@@ -35,17 +43,23 @@ public class CommandConfiguration {
         return aliases;
     }
 
+    public boolean getParseArguments() {
+        return parseArguments;
+    }
+
     public static class Builder {
         private List<Argument> arguments;
         private String trigger;
         private String description;
         private List<String> aliases;
+        private boolean parseArguments;
 
         public Builder() {
             this.arguments = new ArrayList<>();
             this.trigger = "";
             this.description = "";
             this.aliases = new ArrayList<>();
+            this.parseArguments = true;
         }
 
         public Builder addArgument(Argument argument) {
@@ -72,8 +86,14 @@ public class CommandConfiguration {
             return this;
         }
 
+        public Builder disableArgumentParsing() {
+            parseArguments = false;
+
+            return this;
+        }
+
         public CommandConfiguration build() {
-            return new CommandConfiguration(arguments, trigger, description, aliases);
+            return new CommandConfiguration(arguments, trigger, description, aliases, parseArguments);
         }
     }
 }

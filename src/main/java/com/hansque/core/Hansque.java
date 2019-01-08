@@ -86,7 +86,7 @@ public class Hansque {
         @Override
         public void onMessageReceived(MessageReceivedEvent event) {
             // Get message from event
-            String message = event.getMessage().getContentRaw();
+            String message = event.getMessage().getContentRaw().trim();
 
             // Test if the message starts with the command prefix
             if (!message.startsWith(commandPrefix)) {
@@ -103,6 +103,7 @@ public class Hansque {
             String module = CommandStringUtil.getModuleFromCommandString(commandString);
             String trigger = CommandStringUtil.getTriggerFromCommandString(commandString);
             List<String> args = CommandStringUtil.getArgumentsFromCommandString(commandString);
+            String originalArgumentString = CommandStringUtil.getOriginalArgumentStringFromCommandString(commandString);
             String commandKey = module + ":" + trigger;
 
             // Check if command exists
@@ -113,9 +114,9 @@ public class Hansque {
             // Get command and create objects
             Command command = commands.get(module + ":" + trigger);
             CommandConfiguration commandConfiguration = command.getConfiguration();
-            Arguments arguments = new Arguments(args, commandConfiguration);
+            Arguments arguments = new Arguments(args, originalArgumentString, commandConfiguration);
 
-            if (!arguments.check()) {
+            if (commandConfiguration.getParseArguments() && !arguments.check()) {
                 // TODO: Inform user that the arguments provided are not valid
                 // TODO: Possible with a "usage: ..." message
                 // Temporary
