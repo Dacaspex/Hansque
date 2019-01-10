@@ -14,10 +14,13 @@ public class SingleUseListener implements FutureEventListener {
     private final Consumer<Event> handle;
     private final boolean consumes;
 
+    private boolean done;
+
     public SingleUseListener(Predicate<Event> check, Consumer<Event> handle, boolean consumes) {
         this.check = check;
         this.handle = handle;
         this.consumes = consumes;
+        this.done = false;
     }
 
     /**
@@ -41,11 +44,12 @@ public class SingleUseListener implements FutureEventListener {
 
     @Override
     public boolean isDone() {
-        return true;
+        return done;
     }
 
     @Override
     public void handle(Event event) {
         handle.accept(event);
+        done = true;
     }
 }
