@@ -4,12 +4,15 @@ import com.hansque.commands.Command;
 import com.hansque.commands.CommandConfiguration;
 import com.hansque.commands.CommandStringUtil;
 import com.hansque.commands.argument.Arguments;
+import com.hansque.event.FutureEventListener;
 import com.hansque.modules.Module;
 import net.dv8tion.jda.core.JDA;
+import net.dv8tion.jda.core.events.Event;
 import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -18,9 +21,14 @@ import java.util.List;
  */
 public class Hansque {
 
+    /**
+     * JDA instance
+     */
     private JDA jda;
+    /**
+     * Command prefix
+     */
     private String commandPrefix;
-    private List<Module> modules;
     /**
      * Mapping between moduleString -> module
      */
@@ -33,58 +41,101 @@ public class Hansque {
      * Mapping between moduleString:triggerString -> command
      */
     private HashMap<String, Command> commands;
+    /**
+     * List of future event listener
+     */
+    private List<FutureEventListener> futureEventListeners;
 
-    public Hansque(JDA jda, String commandPrefix, List<Module> modules) {
+    /**
+     * @param jda           JDA instance
+     * @param commandPrefix Command prefix
+     */
+    public Hansque(JDA jda, String commandPrefix) {
         this.jda = jda;
         this.commandPrefix = commandPrefix;
-        this.modules = modules;
         this.loadedModules = new HashMap<>();
         this.aliases = new HashMap<>();
         this.commands = new HashMap<>();
+        this.futureEventListeners = new ArrayList<>();
     }
 
     /**
-     * Initialises the bot, registering all enabled modules and setting up event listeners.
+     * Initialises the sub systems of the bot itself.
      */
     public void initialise() {
-        // Load all modules that are enabled
-        for (Module module : modules) {
-            if (module.isEnabled()) {
-                module.initialise();
-                registerModule(module);
-            }
-        }
-
-        // Lastly, register the event listener
         jda.addEventListener(new EventListener());
     }
 
     /**
-     * Internal function to register a module and store information about it.
+     * Registers and initialises a list of modules if the module is enabled.
      *
-     * @param module Module to register
+     * @param modules Modules to register
      */
-    private void registerModule(Module module) {
-        loadedModules.put(module.getName(), module);
+    public void registerModules(Module... modules) {
+        for (Module module : modules) {
+            if (!module.isEnabled()) {
+                continue;
+            }
 
-        // Save commands
-        for (Command command : module.getCommands()) {
-            // Initialise command
-            command.initialise();
-            CommandConfiguration configuration = command.getConfiguration();
-            String fullCommandName = module.getName() + ":" + configuration.getTrigger();
+            module.initialise();
+            loadedModules.put(module.getName(), module);
 
-            // And store for easier access
-            commands.put(fullCommandName, command);
-            for (String alias : configuration.getAliases()) {
-                aliases.put(alias, fullCommandName);
+            // Save commands
+            for (Command command : module.getCommands()) {
+                // Initialise command
+                command.initialise();
+                CommandConfiguration configuration = command.getConfiguration();
+                String fullCommandName = module.getName() + ":" + configuration.getTrigger();
+
+                // And store for easier access
+                commands.put(fullCommandName, command);
+                for (String alias : configuration.getAliases()) {
+                    aliases.put(alias, fullCommandName);
+                }
             }
         }
     }
 
+    /**
+     * Add a future event listener
+     *
+     * @param futureEventListener Future event listener
+     */
+    public void registerFutureEventListener(FutureEventListener futureEventListener) {
+        futureEventListeners.add(futureEventListener);
+    }
+
     class EventListener extends ListenerAdapter {
+
         @Override
-        public void onMessageReceived(MessageReceivedEvent event) {
+        public void onGenericEvent(Event event) {
+            for (int i = 0; i < futureEventListeners.size(); i++) {
+                FutureEventListener futureEventListener = futureEventListeners.get(i);
+
+                // Check if the event must be processed by a future event listener
+                if (futureEventListener.check(event)) {
+                    futureEventListener.handle(event);
+
+                    // Check if the listener should be consumed
+                    if (futureEventListener.consumes()) {
+                        return;
+                    }
+                }
+
+                // If the listener is done, remove it from the future event listeners array
+                if (futureEventListener.isDone()) {
+                    futureEventListeners.remove(futureEventListener);
+                    i--;
+                }
+            }
+
+            // Handle event normally
+            if (event instanceof MessageReceivedEvent) {
+                handleMessageReceived((MessageReceivedEvent) event);
+            }
+        }
+
+        private void handleMessageReceived(MessageReceivedEvent event) {
             // Get message from event
             String message = event.getMessage().getContentRaw().trim();
 
