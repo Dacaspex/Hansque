@@ -16,6 +16,6 @@ public interface Module {
 
     public List<Command> getCommands();
 
-    public void execute(String command, Arguments args, MessageReceivedEvent event);
+    public void execute(Command command, Arguments args, MessageReceivedEvent event);
 
 }

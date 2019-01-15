@@ -2,9 +2,12 @@ package com.hansque.core;
 
 import com.hansque.commands.Command;
 import com.hansque.commands.CommandConfiguration;
+import com.hansque.commands.CommandStringUtil;
 import com.hansque.commands.argument.Arguments;
+import com.hansque.event.FutureEventListener;
 import com.hansque.modules.Module;
 import net.dv8tion.jda.core.JDA;
+import net.dv8tion.jda.core.events.Event;
 import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -18,106 +21,159 @@ import java.util.List;
  */
 public class Hansque {
 
+    /**
+     * JDA instance
+     */
     private JDA jda;
+    /**
+     * Command prefix
+     */
     private String commandPrefix;
-    private List<Module> modules;
+    /**
+     * Mapping between moduleString -> module
+     */
     private HashMap<String, Module> loadedModules;
-    private HashMap<String, CommandConfiguration> commandConfigurations;
+    /**
+     * Mapping between aliasString -> moduleString:triggerString
+     */
     private HashMap<String, String> aliases;
+    /**
+     * Mapping between moduleString:triggerString -> command
+     */
+    private HashMap<String, Command> commands;
+    /**
+     * List of future event listener
+     */
+    private List<FutureEventListener> futureEventListeners;
 
-    public Hansque(JDA jda, String commandPrefix, List<Module> modules) {
+    /**
+     * @param jda           JDA instance
+     * @param commandPrefix Command prefix
+     */
+    public Hansque(JDA jda, String commandPrefix) {
         this.jda = jda;
         this.commandPrefix = commandPrefix;
-        this.modules = modules;
         this.loadedModules = new HashMap<>();
         this.aliases = new HashMap<>();
-        this.commandConfigurations = new HashMap<>();
+        this.commands = new HashMap<>();
+        this.futureEventListeners = new ArrayList<>();
     }
 
     /**
-     * Initialises the bot, registering all enabled modules and setting up event listeners.
+     * Initialises the sub systems of the bot itself.
      */
     public void initialise() {
-        // Load all modules that are enabled
-        for (Module module : modules) {
-            if (module.isEnabled()) {
-                registerModule(module);
-            }
-        }
-
-        // Lastly, register the event listener
         jda.addEventListener(new EventListener());
     }
 
     /**
-     * Internal function to register a module and store information about it.
+     * Registers and initialises a list of modules if the module is enabled.
      *
-     * @param module Module to register
+     * @param modules Modules to register
      */
-    private void registerModule(Module module) {
-        loadedModules.put(module.getName(), module);
+    public void registerModules(Module... modules) {
+        for (Module module : modules) {
+            if (!module.isEnabled()) {
+                continue;
+            }
 
-        // Save command configurations
-        for (Command command : module.getCommands()) {
-            // Get configuration and full command name
-            CommandConfiguration configuration = command.configure();
-            String fullCommandName = module.getName() + ":" + configuration.getTrigger();
+            module.initialise();
+            loadedModules.put(module.getName(), module);
 
-            // Store required info for easier access
-            commandConfigurations.put(fullCommandName, configuration);
-            for (String alias : configuration.getAliases()) {
-                aliases.put(alias, fullCommandName);
+            // Save commands
+            for (Command command : module.getCommands()) {
+                // Initialise command
+                command.initialise();
+                CommandConfiguration configuration = command.getConfiguration();
+                String fullCommandName = module.getName() + ":" + configuration.getTrigger();
+
+                // And store for easier access
+                commands.put(fullCommandName, command);
+                for (String alias : configuration.getAliases()) {
+                    aliases.put(alias, fullCommandName);
+                }
             }
         }
     }
 
-    class EventListener extends ListenerAdapter {
-        @Override
-        public void onMessageReceived(MessageReceivedEvent event) {
-            // TODO: THis is ugly AF and should be revised in the future. It works for now but
-            // TODO: That's all...
+    /**
+     * Add a future event listener
+     *
+     * @param futureEventListener Future event listener
+     */
+    public void registerFutureEventListener(FutureEventListener futureEventListener) {
+        futureEventListeners.add(futureEventListener);
+    }
 
-            String message = event.getMessage().getContentRaw();
-            System.out.println(message);
+    class EventListener extends ListenerAdapter {
+
+        @Override
+        public void onGenericEvent(Event event) {
+            for (int i = 0; i < futureEventListeners.size(); i++) {
+                FutureEventListener futureEventListener = futureEventListeners.get(i);
+
+                // Check if the event must be processed by a future event listener
+                if (futureEventListener.check(event)) {
+                    futureEventListener.handle(event);
+
+                    // Check if the listener should be consumed
+                    if (futureEventListener.consumes()) {
+                        return;
+                    }
+                }
+
+                // If the listener is done, remove it from the future event listeners array
+                if (futureEventListener.isDone()) {
+                    futureEventListeners.remove(futureEventListener);
+                    i--;
+                }
+            }
+
+            // Handle event normally
+            if (event instanceof MessageReceivedEvent) {
+                handleMessageReceived((MessageReceivedEvent) event);
+            }
+        }
+
+        private void handleMessageReceived(MessageReceivedEvent event) {
+            // Get message from event
+            String message = event.getMessage().getContentRaw().trim();
+
+            // Test if the message starts with the command prefix
             if (!message.startsWith(commandPrefix)) {
-                // No command
                 return;
             }
-            message = message.substring(1);
 
-            String[] messageParts = message.split(" ");
+            // Strip this prefix for easier processing
+            String commandString = CommandStringUtil.stripPrefixFromString(message, commandPrefix);
 
-            // Split message on ':' and ' '
-            String command;
-            if (aliases.containsKey(message)) {
-                command = aliases.get(message);
-            } else {
-                command = messageParts[0];
-            }
-            String[] commandParts = command.split(":");
-            String module = commandParts[0];
-            String trigger = commandParts[1];
+            // Convert alias to actual command
+            commandString = CommandStringUtil.convertAlias(commandString, aliases);
 
-            // Fill arguments
-            List<String> args = new ArrayList<String>();
-            for (int i = 1; i < messageParts.length; i++) {
-                args.add(messageParts[i]);
+            // Get information from command string
+            String module = CommandStringUtil.getModuleFromCommandString(commandString);
+            String trigger = CommandStringUtil.getTriggerFromCommandString(commandString);
+            List<String> args = CommandStringUtil.getArgumentsFromCommandString(commandString);
+            String originalArgumentString = CommandStringUtil.getOriginalArgumentStringFromCommandString(commandString);
+            String commandKey = module + ":" + trigger;
+
+            // Check if command exists
+            if (!commands.containsKey(commandKey)) {
+                return; // Temporary
             }
 
-            CommandConfiguration commandConfiguration = commandConfigurations.get(command);
-            Arguments arguments = new Arguments(args, commandConfiguration);
+            // Get command and create objects
+            Command command = commands.get(module + ":" + trigger);
+            CommandConfiguration commandConfiguration = command.getConfiguration();
+            Arguments arguments = new Arguments(args, originalArgumentString, commandConfiguration);
 
-            if (!arguments.check()) {
+            if (commandConfiguration.getParseArguments() && !arguments.check()) {
                 // TODO: Inform user that the arguments provided are not valid
                 // TODO: Possible with a "usage: ..." message
                 // Temporary
-                event.getChannel().sendMessage(commandConfiguration.getDescription()).queue();
+                event.getChannel().sendMessage(command.getConfiguration().getDescription()).queue();
             } else {
-                loadedModules.get(module).execute(
-                        trigger,
-                        arguments,
-                        event
-                );
+                loadedModules.get(module).execute(command, arguments, event);
             }
         }
 

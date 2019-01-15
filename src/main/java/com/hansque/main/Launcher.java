@@ -8,8 +8,6 @@ import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Launcher {
 
@@ -28,15 +26,12 @@ public class Launcher {
 
         // Maybe move the hansque initialization and module registering to a different class
         String commandPrefix = botMapping.string("command_prefix");
-        Hansque hansque = new Hansque(
-                jda,
-                commandPrefix,
-                new ArrayList<>(
-                        Arrays.asList(
-                                Initialiser.getWeatherModule(yaml),
-                                Initialiser.getManagementModule(yaml)
-                        )
-                )
+
+        Hansque hansque = new Hansque(jda, commandPrefix);
+
+        // Register modules
+        hansque.registerModules(
+                Initialiser.getWeatherModule(yaml)
         );
 
         try {
