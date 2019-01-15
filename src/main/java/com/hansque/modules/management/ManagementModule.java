@@ -50,10 +50,8 @@ public class ManagementModule implements Module {
         );
     }
 
-    public void execute(String command, Arguments args, MessageReceivedEvent event) {
-        if (command.equals("cleanmessages")) {
-            cleanMessagesCommand.execute(args, event);
-        }
+    public void execute(Command command, Arguments args, MessageReceivedEvent event) {
+        command.execute(args, event);
     }
 
 }

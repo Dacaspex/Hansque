@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class CleanMessagesCommand implements Command {
 
     private List<String> aliases;
+    private CommandConfiguration configuration;
 
     private Argument numberOfMessages;
 
@@ -23,7 +24,7 @@ public class CleanMessagesCommand implements Command {
     }
 
     @Override
-    public CommandConfiguration configure() {
+    public void initialise() {
         numberOfMessages = new Argument(
                 "number",
                 "The number of messages that need to be removed",
@@ -31,12 +32,17 @@ public class CleanMessagesCommand implements Command {
                 Argument.Constraint.OPTIONAL
         );
 
-        return new CommandConfiguration.Builder()
+        configuration = new CommandConfiguration.Builder()
                 .setTrigger("cleanmessages")
                 .addAliases(aliases)
                 .setDescription("This command cleans up messages in a channel")
                 .addArgument(numberOfMessages)
                 .build();
+    }
+
+    @Override
+    public CommandConfiguration getConfiguration() {
+        return configuration;
     }
 
     @Override
